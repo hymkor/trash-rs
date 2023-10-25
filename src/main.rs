@@ -3,11 +3,9 @@ extern crate glob;
 use core::ffi::c_void;
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{BOOL, HWND};
-use windows::Win32::UI::Shell::{SHFileOperationW, SHFILEOPSTRUCTW};
-
-const FO_DELETE: u32 = 0x3;
-const FOF_ALLOWUNDO: u16 = 0x40;
-const FOF_NOCONFIRMATION: u16 = 0x10;
+use windows::Win32::UI::Shell::{
+    SHFileOperationW, FOF_ALLOWUNDO, FOF_NOCONFIRMATION, FO_DELETE, SHFILEOPSTRUCTW,
+};
 
 fn append_fname(buffer: &mut Vec<u16>, fname: &str) {
     println!("{}", fname);
@@ -37,7 +35,7 @@ fn trash() -> Result<(), Box<dyn std::error::Error>> {
             wFunc: FO_DELETE,
             pFrom: PCWSTR(source.as_mut_ptr()),
             pTo: w!(""),
-            fFlags: FOF_ALLOWUNDO | FOF_NOCONFIRMATION,
+            fFlags: (FOF_ALLOWUNDO | FOF_NOCONFIRMATION) as u16,
             fAnyOperationsAborted: BOOL(0),
             hNameMappings: 0 as *mut c_void,
             lpszProgressTitle: w!("to trash"),
