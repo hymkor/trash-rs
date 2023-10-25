@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "trash-rs"
+name = "trash"
 version = "0.1.0"
 dependencies = [
  "windows",
