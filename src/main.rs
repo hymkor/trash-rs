@@ -5,6 +5,7 @@ use windows::Win32::UI::Shell::{SHFileOperationW, SHFILEOPSTRUCTW};
 
 const FO_DELETE: u32 = 0x3;
 const FOF_ALLOWUNDO: u16 = 0x40;
+const FOF_NOCONFIRMATION: u16 = 0x10;
 
 fn trash(fname: &str) {
     let mut source: Vec<u16> = fname.encode_utf16().collect();
@@ -16,7 +17,7 @@ fn trash(fname: &str) {
         wFunc: FO_DELETE,
         pFrom: PCWSTR(source.as_mut_ptr()),
         pTo: w!(""),
-        fFlags: FOF_ALLOWUNDO,
+        fFlags: FOF_ALLOWUNDO | FOF_NOCONFIRMATION,
         fAnyOperationsAborted: BOOL(0),
         hNameMappings: 0 as *mut c_void,
         lpszProgressTitle: w!("to trash"),
