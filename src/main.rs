@@ -10,6 +10,7 @@ const FOF_NOCONFIRMATION: u16 = 0x10;
 fn main() {
     let mut source: Vec<u16> = Vec::new();
     for fname in std::env::args().skip(1) {
+        println!("{}", fname);
         let mut fname_vec: Vec<u16> = fname.encode_utf16().collect();
         source.append(&mut fname_vec);
         source.push(0);
