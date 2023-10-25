@@ -14,7 +14,7 @@ fn append_fname(buffer: &mut Vec<u16>, fname: &str) {
     buffer.push(0)
 }
 
-fn trash() -> Result<(), Box<dyn std::error::Error>> {
+fn trash() -> Result<i32, Box<dyn std::error::Error>> {
     let mut source: Vec<u16> = Vec::new();
     for fname in std::env::args().skip(1) {
         let mut glob_ok = false;
@@ -28,28 +28,32 @@ fn trash() -> Result<(), Box<dyn std::error::Error>> {
             append_fname(&mut source, &fname);
         }
     }
-    if source.len() > 0 {
-        source.push(0);
-        let mut sh_file_op_struct = SHFILEOPSTRUCTW {
-            hwnd: HWND(0),
-            wFunc: FO_DELETE,
-            pFrom: PCWSTR(source.as_mut_ptr()),
-            pTo: w!(""),
-            fFlags: (FOF_ALLOWUNDO | FOF_NOCONFIRMATION) as u16,
-            fAnyOperationsAborted: BOOL(0),
-            hNameMappings: 0 as *mut c_void,
-            lpszProgressTitle: w!("to trash"),
-        };
-        unsafe {
-            let _ = SHFileOperationW(&mut sh_file_op_struct);
-        }
+    if source.len() <= 0 {
+        return Ok(0)
     }
-    Ok(())
+    source.push(0);
+    let mut sh_file_op_struct = SHFILEOPSTRUCTW {
+        hwnd: HWND(0),
+        wFunc: FO_DELETE,
+        pFrom: PCWSTR(source.as_mut_ptr()),
+        pTo: w!(""),
+        fFlags: (FOF_ALLOWUNDO | FOF_NOCONFIRMATION) as u16,
+        fAnyOperationsAborted: BOOL(0),
+        hNameMappings: 0 as *mut c_void,
+        lpszProgressTitle: w!("to trash"),
+    };
+    unsafe {
+        Ok(SHFileOperationW(&mut sh_file_op_struct))
+    }
 }
 
 fn main() {
-    if let Err(err) = trash() {
-        eprintln!("{}", err)
+    match trash(){
+        Err(err) => {
+            eprintln!("{}", err);
+            std::process::exit(1)
+        }
+        Ok(n) => std::process::exit(n),
     }
 }
 
