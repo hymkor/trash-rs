@@ -1,3 +1,5 @@
+extern crate glob;
+
 use core::ffi::c_void;
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{BOOL, HWND};
@@ -7,13 +9,26 @@ const FO_DELETE: u32 = 0x3;
 const FOF_ALLOWUNDO: u16 = 0x40;
 const FOF_NOCONFIRMATION: u16 = 0x10;
 
-fn main() {
+fn append_fname(buffer: &mut Vec<u16>, fname: &str) {
+    println!("{}", fname);
+    let mut fname_vec: Vec<u16> = fname.encode_utf16().collect();
+    buffer.append(&mut fname_vec);
+    buffer.push(0)
+}
+
+fn trash() -> Result<(), Box<dyn std::error::Error>> {
     let mut source: Vec<u16> = Vec::new();
     for fname in std::env::args().skip(1) {
-        println!("{}", fname);
-        let mut fname_vec: Vec<u16> = fname.encode_utf16().collect();
-        source.append(&mut fname_vec);
-        source.push(0);
+        let mut glob_ok = false;
+        for filename in glob::glob(&fname)? {
+            if let Some(filename) = filename?.to_str() {
+                append_fname(&mut source, &filename);
+                glob_ok = true;
+            }
+        }
+        if !glob_ok {
+            append_fname(&mut source, &fname);
+        }
     }
     if source.len() > 0 {
         source.push(0);
@@ -30,6 +45,13 @@ fn main() {
         unsafe {
             let _ = SHFileOperationW(&mut sh_file_op_struct);
         }
+    }
+    Ok(())
+}
+
+fn main() {
+    if let Err(err) = trash() {
+        eprintln!("{}", err)
     }
 }
 
