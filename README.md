@@ -17,7 +17,7 @@ Download the binary package from [Releases](https://github.com/hymkor/trash-rs/r
 ### for scoop-installer
 
 ```
-scoop install https://raw.githubusercontent.com/hymkor/trash-rs/master/trash-rs.json
+scoop install https://raw.githubusercontent.com/hymkor/trash-rs/master/trash.json
 ```
 
 or
