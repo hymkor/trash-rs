@@ -9,8 +9,9 @@ use windows::Win32::UI::Shell::{
 
 fn append_fname(buffer: &mut Vec<u16>, fname: &str) {
     println!("{}", fname);
-    let mut fname_vec: Vec<u16> = fname.encode_utf16().collect();
-    buffer.append(&mut fname_vec);
+    for c in fname.encode_utf16() {
+        buffer.push(c)
+    }
     buffer.push(0)
 }
 
@@ -29,26 +30,24 @@ fn trash() -> Result<i32, Box<dyn std::error::Error>> {
         }
     }
     if source.len() <= 0 {
-        return Ok(0)
+        return Ok(0);
     }
     source.push(0);
     let mut sh_file_op_struct = SHFILEOPSTRUCTW {
         hwnd: HWND(0),
         wFunc: FO_DELETE,
-        pFrom: PCWSTR(source.as_mut_ptr()),
+        pFrom: PCWSTR(source.as_ptr()),
         pTo: w!(""),
         fFlags: (FOF_ALLOWUNDO | FOF_NOCONFIRMATION) as u16,
         fAnyOperationsAborted: BOOL(0),
         hNameMappings: 0 as *mut c_void,
         lpszProgressTitle: w!("to trash"),
     };
-    unsafe {
-        Ok(SHFileOperationW(&mut sh_file_op_struct))
-    }
+    unsafe { Ok(SHFileOperationW(&mut sh_file_op_struct)) }
 }
 
 fn main() {
-    match trash(){
+    match trash() {
         Err(err) => {
             eprintln!("{}", err);
             std::process::exit(1)
