@@ -4,8 +4,12 @@ Trash.exe by Rust
 Move file(s) to trash-box of Microsoft Windows.
 
 ```
-$ trash {FILENAME(s)...}
+$ trash {OPTION(S)...} {FILENAME(s)...}
 ```
+
+**Options:**
+
+- `-from-file LISTFILE`: Read filename(s) to remove from the specified file (use `-` to read from standard input) .
 
 It requires VCRUNTIME140.DLL
 
