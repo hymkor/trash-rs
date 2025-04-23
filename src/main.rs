@@ -18,15 +18,15 @@ fn append_fname(buffer: &mut Vec<u16>, fname: &str) {
 fn trash() -> Result<i32, Box<dyn std::error::Error>> {
     let mut source: Vec<u16> = Vec::new();
     for fname in std::env::args().skip(1) {
-        let mut glob_ok = false;
+        let mut done = false;
         for filename in glob::glob(&fname)? {
             if let Some(filename) = filename?.to_str() {
                 append_fname(&mut source, &filename);
-                glob_ok = true;
+                done = true;
             }
         }
-        if !glob_ok {
-            append_fname(&mut source, &fname);
+        if !done {
+            return Err(format!("no matches found for pattern: {}", fname).into());
         }
     }
     if source.len() <= 0 {
