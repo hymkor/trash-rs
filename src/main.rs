@@ -1,20 +1,51 @@
 extern crate glob;
 
+use std::io::{self, BufRead};
 use trash::TrashBox;
+
+fn trash_from_reader(
+    r: &mut impl std::io::Read,
+    tbox: &mut TrashBox,
+) -> Result<(), std::io::Error> {
+    let br = io::BufReader::new(r);
+    for line in br.lines() {
+        let line = match line {
+            Err(err) => return Err(err),
+            Ok(line) => line,
+        };
+        println!("{}", &line);
+        tbox.add(&line);
+    }
+    Ok(())
+}
 
 fn trash() -> Result<i32, Box<dyn std::error::Error>> {
     let mut trashbox = TrashBox::new();
-    for fname in std::env::args().skip(1) {
-        let mut done = false;
-        for filename in glob::glob(&fname)? {
-            if let Some(filename) = filename?.to_str() {
-                println!("{}", fname);
-                trashbox.add(&filename);
-                done = true;
+    let mut args = std::env::args().skip(1);
+    while let Some(arg1) = args.next() {
+        if arg1 == "-from-file" {
+            match args.next() {
+                Some(filename) => {
+                    if filename == "-" {
+                        trash_from_reader(&mut std::io::stdin(), &mut trashbox)?;
+                    } else {
+                        trash_from_reader(&mut std::fs::File::open(filename)?, &mut trashbox)?;
+                    }
+                }
+                None => return Err(format!("Too few arguments for -from-file").into()),
             }
-        }
-        if !done {
-            return Err(format!("no matches found for pattern: {}", fname).into());
+        } else {
+            let mut done = false;
+            for filename in glob::glob(&arg1)? {
+                if let Some(filename) = filename?.to_str() {
+                    println!("{}", arg1);
+                    trashbox.add(&filename);
+                    done = true;
+                }
+            }
+            if !done {
+                return Err(format!("no matches found for pattern: {}", arg1).into());
+            }
         }
     }
     Ok(trashbox.throw())
