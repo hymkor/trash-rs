@@ -1,25 +1,23 @@
 ifeq ($(OS),Windows_NT)
-    SHELL=CMD.EXE
+    SHELL=CMD.exe
     SET=set
     NUL=nul
     EXE=.exe
-    GITDIR:=$(or $(GIT_INSTALL_ROOT),$(shell for %%I in (git.exe) do echo %%~dp$$PATH:I..))
-    AWK:="$(GITDIR)\usr\bin\gawk.exe"
     RM=del
 
 else
     SET=export
     NUL=/dev/null
     EXE=
-    AWK=gawk
     RM=rm
 endif
 
 NAME:=$(subst -rs,,$(notdir $(CURDIR)))
-VERSION:=v$(shell $(AWK) "/version/{ gsub(/[=\"]/,\"\",$$NF) ; print $$NF ; exit }" Cargo.toml)
+VERSION:=v$(shell cargo metadata --format-version=1 --no-deps | jq -r ".packages[0].version")
 
 all:
-	@echo make dist/manifest/release/clean-dist
+	@echo Usage: make dist/manifest/release/clean-dist
+	@echo VERSION=$(VERSION)
 
 clean-dist:
 	$(RM) $(NAME)-*.zip
